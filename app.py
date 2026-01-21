@@ -2,7 +2,6 @@ import streamlit as st
 import cv2
 import numpy as np
 from ultralytics import YOLO
-import time
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 import av
 
@@ -13,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- PROFESSIONAL CSS (Kept Exactly Same) ---
+# --- PROFESSIONAL CSS (Visibility Fix) ---
 st.markdown("""
     <style>
     [data-testid="stSidebar"] {
@@ -30,6 +29,10 @@ st.markdown("""
         border-radius: 10px;
         border: 1px solid #3e4251;
     }
+    /* Hide the 'Select Device' and settings menu to keep it clean */
+    .css-1v0mb95 {
+        display: none;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -41,15 +44,8 @@ def load_yolo_model(model_name):
 # --- SIDEBAR: SETTINGS ---
 st.sidebar.title("⚙️ AI Configuration")
 
-model_size = st.sidebar.selectbox(
-    "1. Select Model", 
-    ["yolov8n", "yolov8s"]
-)
-
-confidence = st.sidebar.slider(
-    "2. Confidence Threshold", 
-    0.0, 1.0, 0.45, 0.05
-)
+model_size = st.sidebar.selectbox("1. Select Model", ["yolov8n", "yolov8s"])
+confidence = st.sidebar.slider("2. Confidence Threshold", 0.0, 1.0, 0.45, 0.05)
 
 with st.sidebar.expander("🎓 Learn: How Confidence Works?"):
     st.write("Filters out detections below this probability score.")
@@ -85,16 +81,19 @@ with col1:
     st.subheader("🖥️ Live Feed")
     
     if run_webcam:
-        # This replaces cv2.VideoCapture to work on the internet
+        # Optimized WebRTC Streamer
         ctx = webrtc_streamer(
-            key="yolo",
+            key="yolo-live",
             video_processor_factory=YOLOProcessor,
             rtc_configuration=RTCConfiguration(
                 {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
             ),
             media_stream_constraints={"video": True, "audio": False},
             async_processing=True,
+            # Hides the extra UI buttons for a cleaner look
+            translations={"start": "ACTIVATE CAMERA", "stop": "STOP CAMERA"},
         )
+        
         if ctx.video_processor:
             ctx.video_processor.confidence = confidence
     else:
@@ -106,12 +105,12 @@ with col1:
 
 with col2:
     st.subheader("📊 Statistics")
-    st.info("Metrics are displayed directly on the video feed for real-time performance.")
+    st.info("Performance metrics are rendered directly on the video feed.")
     
     st.markdown("### 📝 Instructions")
     st.info("""
     1. Select model from sidebar.
     2. Toggle **Start Live Detection**.
-    3. Click the **'START'** button that appears in the feed.
-    4. Allow browser camera permissions.
+    3. Click the **'ACTIVATE CAMERA'** button. 
+    4. *Note: Browser security requires this manual click to allow camera access.*
     """)
