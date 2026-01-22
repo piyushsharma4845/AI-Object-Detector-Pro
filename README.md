@@ -6,7 +6,7 @@ An end-to-end Computer Vision application that performs real-time object detecti
 ---
 
 ## 🚀 Live Demo
-**Access the live application here:** [👉 Click to Open App](YOUR_LIVE_LINK_HERE)
+**Access the live application here:** [👉 Click to Open App](https://ai-object-detector-pro-04.streamlit.app/)
 
 ---
 
